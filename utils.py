@@ -1,14 +1,15 @@
 import os
 import random
 import numpy as np
-import tensorflow as tf
+import math
+# import tensorflow as tf
 
 def seed_it_all(seed=7):
     """ Attempt to be Reproducible """
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
-    tf.random.set_seed(seed)
+    # tf.random.set_seed(seed)
     
 import numpy as np
 
@@ -66,3 +67,30 @@ def angular_dist_score(az_true, zen_true, az_pred, zen_pred):
     
     # convert back to an angle (in radian)
     return np.average(np.abs(np.arccos(scalar_prod)))
+
+
+def cartesian_to_sphere(x, y, z):
+    # https://en.wikipedia.org/wiki/Spherical_coordinate_system
+    x2y2 = x**2 + y**2
+    r = math.sqrt(x2y2 + z**2)
+    azimuth = math.acos(x / math.sqrt(x2y2)) * np.sign(y)
+    zenith = math.acos(z / r)
+    return azimuth, zenith
+
+
+def sphere_to_cartesian(azimuth, zenith):
+    # see: https://stackoverflow.com/a/10868220/4521646
+    x = math.sin(zenith) * math.cos(azimuth)
+    y = math.sin(zenith) * math.sin(azimuth)
+    z = math.cos(zenith)
+    return x, y, z
+
+
+def adjust_sphere(azimuth, zenith):
+    if zenith < 0:
+        zenith += math.pi
+        azimuth += math.pi
+    if azimuth < 0:
+        azimuth += math.pi * 2
+    azimuth = azimuth % (2 * math.pi)
+    return azimuth, zenith
