@@ -38,3 +38,12 @@ It should be placed in the 'data/' directory directly so the file structure look
 - The events have a time element so the observations are dependent on each other.
 - Each event has its own set of sub events that are picked up by a sensor
 - There is a time series element to this
+
+
+## Tests
+
+Run the following command in the root directory
+
+```bash
+pytest .
+```

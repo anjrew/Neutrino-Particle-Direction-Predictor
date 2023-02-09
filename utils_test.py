@@ -1,6 +1,6 @@
 import math
 import numpy as np
-import pytest
+import pytest #type: ignore
 from utils import cartesian_to_sphere, sphere_to_cartesian, adjust_sphere
 
 

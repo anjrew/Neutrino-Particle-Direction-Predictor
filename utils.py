@@ -1,15 +1,14 @@
 import os
 import random
+from typing import Tuple
 import numpy as np
 import math
-# import tensorflow as tf
 
 def seed_it_all(seed=7):
     """ Attempt to be Reproducible """
     os.environ['PYTHONHASHSEED'] = str(seed)
     random.seed(seed)
     np.random.seed(seed)
-    # tf.random.set_seed(seed)
     
 import numpy as np
 
@@ -21,6 +20,8 @@ def angular_dist_score(az_true, zen_true, az_pred, zen_pred):
     and then their scalar product is computed, which is equal to
     the cosine of the angle between the two vectors. The inverse 
     cosine (arccos) thereof is then the angle between the two input vectors
+    
+    The lower the angle, the more similar the two vectors are meaning the score is better.
     
     Parameters:
     -----------
@@ -69,24 +70,54 @@ def angular_dist_score(az_true, zen_true, az_pred, zen_pred):
     return np.average(np.abs(np.arccos(scalar_prod)))
 
 
-def cartesian_to_sphere(x, y, z):
-    # https://en.wikipedia.org/wiki/Spherical_coordinate_system
+def cartesian_to_sphere(x: float, y: float, z: float) -> Tuple[float, float]:
+    """Maps vector cartesian coordinates (x, y, z) from the origin to spherical angles azimuth and zenith.
+    
+    See: https://en.wikipedia.org/wiki/Spherical_coordinate_system
+
+    Args:
+        x (float): The x-coordinate of the point.
+        y (float): The y-coordinate of the point.
+        z (float): The z-coordinate of the point.
+
+    Returns:
+        tuple[float, float]: The azimuth and zenith angles in radians.
+    """
     x2y2 = x**2 + y**2
     r = math.sqrt(x2y2 + z**2)
+    print('r', r, 'x2y2', x2y2)
     azimuth = math.acos(x / math.sqrt(x2y2)) * np.sign(y)
     zenith = math.acos(z / r)
     return azimuth, zenith
 
 
-def sphere_to_cartesian(azimuth, zenith):
-    # see: https://stackoverflow.com/a/10868220/4521646
+def sphere_to_cartesian(azimuth: float, zenith: float) -> Tuple[float, float, float]:
+    """Map spherical coordinates to cartesian coordinates.
+    see: https://stackoverflow.com/a/10868220/4521646
+    
+    Args:
+        azimuth (float): The azimuth angle in radians.
+        zenith (float): The zenith angle in radians.
+
+    Returns:
+        tuple: The x, y, z vector cartesian coordinates of the point from the origin.
+    """
     x = math.sin(zenith) * math.cos(azimuth)
     y = math.sin(zenith) * math.sin(azimuth)
     z = math.cos(zenith)
     return x, y, z
 
 
-def adjust_sphere(azimuth, zenith):
+def adjust_sphere(azimuth:float, zenith:float) -> Tuple[float, float]:
+    """Adjust azimuth and zenith to be within [-pi, pi]
+
+    Args:
+        azimuth (float): The azimuth to adjust
+        zenith (float): The zenith to adjust
+
+    Returns:
+        float: The adjusted azimuth and zenith
+    """
     if zenith < 0:
         zenith += math.pi
         azimuth += math.pi
