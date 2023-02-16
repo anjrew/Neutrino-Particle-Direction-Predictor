@@ -10,7 +10,6 @@ def seed_it_all(seed=7):
     random.seed(seed)
     np.random.seed(seed)
     
-import numpy as np
 
 
 def angular_dist_score(az_true, zen_true, az_pred, zen_pred):
@@ -125,3 +124,5 @@ def adjust_sphere(azimuth:float, zenith:float) -> Tuple[float, float]:
         azimuth += math.pi * 2
     azimuth = azimuth % (2 * math.pi)
     return azimuth, zenith
+
+
