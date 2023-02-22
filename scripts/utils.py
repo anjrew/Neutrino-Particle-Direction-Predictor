@@ -12,7 +12,7 @@ def seed_it_all(seed=7):
     
 
 
-def angular_dist_score(az_true, zen_true, az_pred, zen_pred):
+def angular_dist_score(az_true, zen_true, az_pred, zen_pred) -> float:
     '''
     calculate the MAE of the angular distance between two directions.
     The two vectors are first converted to cartesian unit vectors,
@@ -84,7 +84,6 @@ def cartesian_to_sphere(x: float, y: float, z: float) -> Tuple[float, float]:
     """
     x2y2 = x**2 + y**2
     r = math.sqrt(x2y2 + z**2)
-    print('r', r, 'x2y2', x2y2)
     azimuth = math.acos(x / math.sqrt(x2y2)) * np.sign(y)
     zenith = math.acos(z / r)
     return azimuth, zenith

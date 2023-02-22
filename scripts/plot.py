@@ -2,7 +2,8 @@ from typing import List, Optional
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
-from scripts.utils import sphere_to_cartesian 
+from scripts.utils import sphere_to_cartesian, angular_dist_score, adjust_sphere, cartesian_to_sphere
+
 
 from sklearn.decomposition import PCA
 
@@ -104,12 +105,10 @@ def plot_pca(
         df = df[~df['auxiliary']]
     
     if time_threshold is not None:
-        print('Setting time threshold', time_threshold)
         df = df[df['time'] > time_threshold[0]] if time_threshold[0] is not None else df
         df = df[df['time'] < time_threshold[1]] if time_threshold[1] is not None else df
         
     if charge_threshold is not None:
-        print('Setting charge_threshold', charge_threshold)
         df = df[df['charge'] > charge_threshold[0]] if charge_threshold[0] is not None else df
         df = df[df['charge'] < charge_threshold[1]] if charge_threshold[1] is not None else df
         
@@ -126,6 +125,10 @@ def plot_pca(
     x,y,z = sphere_to_cartesian(azimuth, zenith) #type: ignore
 
     truth_trace = get_line([0,0,0], [[x,y,z]], extent)
+    
+    az_pred, zen_pred = adjust_sphere(*cartesian_to_sphere(x,y,z))
+    score = angular_dist_score(az_true=azimuth,zen_true=zenith, az_pred=az_pred, zen_pred=zen_pred)
+    
     fig3 = go.Figure(data = [
             go.Scatter3d(
                 x=df['x'].to_numpy(), y=df['y'].to_numpy(), z=df['z'].to_numpy(),
@@ -188,16 +191,18 @@ def plot_pca(
         },
         annotations=[
             go.layout.Annotation(
-                x=-0.1,  # center the subtitle horizontally
-                y=-0.1,  # position the subtitle below the title
+                x=0.01,  # center the subtitle horizontally
+                y=0.01,  # position the subtitle below the title
                 xref="paper",
                 yref="paper",
                 text=f"""
-                    <b>exclude_axillary:</b> {exclude_axillary}
+                    <b>exclude_axillary: </b> {exclude_axillary}
                     <br>
-                    <b>time_threshold:</b> {time_threshold}
+                    <b>time_threshold: </b> {time_threshold}
                     <br>
-                    <b>charge_threshold:</b> {charge_threshold}
+                    <b>charge_threshold: </b> {charge_threshold}
+                    <br>
+                    <b>Score: </b> {score}
                     <br>
                 """,
 
