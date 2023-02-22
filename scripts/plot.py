@@ -1,7 +1,7 @@
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
-import scripts.utils as utils
+from scripts.utils import sphere_to_cartesian 
 
 from sklearn.decomposition import PCA
 
@@ -32,6 +32,19 @@ def get_line(origin_coords, vector, extent:int) -> np.ndarray:
     line = np.vstack((below_origin, above_origin))
     return line
 
+def get_event_true_values(meta_df: pd.DataFrame, event_id:int) -> dict:
+    """Gets the azimuth and zenith values for the input event
+
+    Args:
+        meta_df (pd.DataFrame): The dataframe with the metadata about the batches
+        event_id (int): The event ID to show
+
+    Returns:
+        dict: The two labelled target angles
+    """
+    assert 'azimuth' in meta_df and 'zenith' in meta_df, f"Missing columns in Meta dataframe"
+    
+    return meta_df[meta_df['event_id']== event_id][['azimuth','zenith']].iloc[0].to_dict()
 
 def compose_event_df(
     batch_df: pd.DataFrame,
