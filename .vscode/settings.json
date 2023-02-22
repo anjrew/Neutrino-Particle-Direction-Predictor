@@ -16,11 +16,15 @@
         "icecube",
         "kaggle",
         "pytest",
+        "showarrow",
         "showlegend",
         "showscale",
         "tickvals",
+        "xanchor",
         "xaxes",
+        "yanchor",
         "yaxes",
+        "yref",
         "zaxes"
     ],
     "python.analysis.diagnosticSeverityOverrides": {

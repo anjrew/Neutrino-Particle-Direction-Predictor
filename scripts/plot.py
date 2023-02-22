@@ -1,3 +1,4 @@
+from typing import List, Optional
 import plotly.graph_objects as go
 import numpy as np
 import pandas as pd
@@ -32,6 +33,7 @@ def get_line(origin_coords, vector, extent:int) -> np.ndarray:
     line = np.vstack((below_origin, above_origin))
     return line
 
+
 def get_event_true_values(meta_df: pd.DataFrame, event_id:int) -> dict:
     """Gets the azimuth and zenith values for the input event
 
@@ -45,6 +47,7 @@ def get_event_true_values(meta_df: pd.DataFrame, event_id:int) -> dict:
     assert 'azimuth' in meta_df and 'zenith' in meta_df, f"Missing columns in Meta dataframe"
     
     return meta_df[meta_df['event_id']== event_id][['azimuth','zenith']].iloc[0].to_dict()
+
 
 def compose_event_df(
     batch_df: pd.DataFrame,
@@ -79,7 +82,9 @@ def compose_event_df(
 def plot_pca(
     df:pd.DataFrame, 
     labels: dict, 
-    exclude_axillary: bool = False, 
+    exclude_axillary: bool = False,
+    time_threshold: Optional[List[int]] = None,
+    charge_threshold: Optional[List[float,]] = None,
     marker_size: int = 9
     
     ):
@@ -97,6 +102,16 @@ def plot_pca(
     
     if exclude_axillary:
         df = df[~df['auxiliary']]
+    
+    if time_threshold is not None:
+        print('Setting time threshold', time_threshold)
+        df = df[df['time'] > time_threshold[0]] if time_threshold[0] is not None else df
+        df = df[df['time'] < time_threshold[1]] if time_threshold[1] is not None else df
+        
+    if charge_threshold is not None:
+        print('Setting charge_threshold', charge_threshold)
+        df = df[df['charge'] > charge_threshold[0]] if charge_threshold[0] is not None else df
+        df = df[df['charge'] < charge_threshold[1]] if charge_threshold[1] is not None else df
         
     x, y, z = df['x'], df['y'], df['z']
     coords = np.array((x,y,z)).T
@@ -120,11 +135,7 @@ def plot_pca(
                     size=df['charge'].to_numpy() * marker_size,
                     color=df['time'].to_numpy(),
                     opacity=0.8,
-                    # colorscale="Viridis",
-                    # sizemode="diameter",
-                    # sizeref=0.5,
-                    # showscale=True,
-                     colorbar=dict(
+                    colorbar=dict(
                         title="Time",
                     ),
                 ),
@@ -135,9 +146,9 @@ def plot_pca(
                     <br>
                     <b>Z:</b> %{z}
                     <br>
-                    <b>Charge:</b> %{marker.size:.2f}<br>
+                    <b>Charge (x marker_size):</b> %{marker.size:.2f}<br>
                     <b>Time:</b> %{marker.color:.2f}
-                """,
+                """
             ),
             go.Scatter3d(
                 x=line[:,0], y=line[:,1], z=line[:,2],
@@ -167,9 +178,37 @@ def plot_pca(
 
     # Add a legend
     fig3.update_layout(
-        title=f"Event prediction",
+        # text=f"Event prediction",
+        title={
+            "text": f"Event prediction",
+            "y": 0.9,  # adjust the y position of the title to make room for the subtitle
+            "x": 0.5,  # center the title horizontally
+            "xanchor": "center",  # center the title horizontally
+            "yanchor": "top",  # align the title with the top of the plot
+        },
+        annotations=[
+            go.layout.Annotation(
+                x=-0.1,  # center the subtitle horizontally
+                y=-0.1,  # position the subtitle below the title
+                xref="paper",
+                yref="paper",
+                text=f"""
+                    <b>exclude_axillary:</b> {exclude_axillary}
+                    <br>
+                    <b>time_threshold:</b> {time_threshold}
+                    <br>
+                    <b>charge_threshold:</b> {charge_threshold}
+                    <br>
+                """,
+
+                showarrow=False,
+                align= 'left',
+                font=dict(size=16),  # set the font size and color of the subtitle
+            )
+        ],
         showlegend=True, 
         legend=dict(x=0, y=1),
+        height=800,
     )
 
     fig3.show()
