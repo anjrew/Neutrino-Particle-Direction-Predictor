@@ -124,6 +124,9 @@ def plot_pca(
                     # sizemode="diameter",
                     # sizeref=0.5,
                     # showscale=True,
+                     colorbar=dict(
+                        title="Time",
+                    ),
                 ),
                 hovertemplate="""
                     <b>X:</b> %{x}
