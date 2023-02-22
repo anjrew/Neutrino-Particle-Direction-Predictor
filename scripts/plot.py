@@ -76,7 +76,13 @@ def compose_event_df(
     return event_df
 
 
-def plot_pca(event_df:pd.DataFrame, labels: dict, exclude_axillary: bool = False):
+def plot_pca(
+    df:pd.DataFrame, 
+    labels: dict, 
+    exclude_axillary: bool = False, 
+    marker_size: int = 9
+    
+    ):
     """Plots the line of best fit for the event using PCA.
 
     Args:
@@ -86,13 +92,13 @@ def plot_pca(event_df:pd.DataFrame, labels: dict, exclude_axillary: bool = False
     """
     
     
-    assert set(event_df.columns) == set(['event_id', 'sensor_id', 'time', 'charge', 'auxiliary', 'x', 'y', 'z']), f"Unexpected columns in event_df: {event_df.columns}"
+    assert set(df.columns) == set(['event_id', 'sensor_id', 'time', 'charge', 'auxiliary', 'x', 'y', 'z']), f"Unexpected columns in event_df: {df.columns}"
     assert 'azimuth' in labels and 'zenith' in labels, f"Missing labels in labels: {labels}"
     
     if exclude_axillary:
-        event_df = event_df[~event_df['auxiliary']]
+        df = df[~df['auxiliary']]
         
-    x, y, z = event_df['x'], event_df['y'], event_df['z']
+    x, y, z = df['x'], df['y'], df['z']
     coords = np.array((x,y,z)).T
     direction_vector = get_direction(coords)
     origin = np.mean(coords, axis=0)
@@ -107,10 +113,28 @@ def plot_pca(event_df:pd.DataFrame, labels: dict, exclude_axillary: bool = False
     truth_trace = get_line([0,0,0], [[x,y,z]], extent)
     fig3 = go.Figure(data = [
             go.Scatter3d(
-                x=event_df['x'].to_numpy(), y=event_df['y'].to_numpy(), z=event_df['z'].to_numpy(),
+                x=df['x'].to_numpy(), y=df['y'].to_numpy(), z=df['z'].to_numpy(),
                 mode='markers',
-                marker=dict(size=5, color=event_df['time'].to_numpy(), opacity=1),
-                name="Detected"
+                name="Detected",
+                marker=dict(
+                    size=df['charge'].to_numpy() * marker_size,
+                    color=df['time'].to_numpy(),
+                    opacity=0.8,
+                    # colorscale="Viridis",
+                    # sizemode="diameter",
+                    # sizeref=0.5,
+                    # showscale=True,
+                ),
+                hovertemplate="""
+                    <b>X:</b> %{x}
+                    <br>
+                    <b>Y:</b> %{y}
+                    <br>
+                    <b>Z:</b> %{z}
+                    <br>
+                    <b>Charge:</b> %{marker.size:.2f}<br>
+                    <b>Time:</b> %{marker.color:.2f}
+                """,
             ),
             go.Scatter3d(
                 x=line[:,0], y=line[:,1], z=line[:,2],
@@ -140,6 +164,7 @@ def plot_pca(event_df:pd.DataFrame, labels: dict, exclude_axillary: bool = False
 
     # Add a legend
     fig3.update_layout(
+        title=f"Event prediction",
         showlegend=True, 
         legend=dict(x=0, y=1),
     )
