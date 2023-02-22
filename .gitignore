@@ -132,3 +132,6 @@ data/*
 .dist/
 artifacts/
 artifacts
+
+models/checkpoints/*
+models/trained/*

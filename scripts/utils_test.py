@@ -1,7 +1,7 @@
 import math
 import numpy as np
 import pytest #type: ignore
-from utils import cartesian_to_sphere, sphere_to_cartesian, adjust_sphere
+from scripts.utils import cartesian_to_sphere, sphere_to_cartesian, adjust_sphere
 
 
 @pytest.mark.parametrize('test', [

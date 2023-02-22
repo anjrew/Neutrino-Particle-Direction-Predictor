@@ -8,11 +8,22 @@
         "plaintext"
     ],
     "cSpell.words": [
+        "adam",
+        "colorbar",
         "fastparquet",
         "finfo",
+        "hovertemplate",
         "icecube",
         "kaggle",
         "pytest",
-        "showlegend"
-    ]
+        "showlegend",
+        "showscale",
+        "tickvals",
+        "xaxes",
+        "yaxes",
+        "zaxes"
+    ],
+    "python.analysis.diagnosticSeverityOverrides": {
+        "reportPrivateImportUsage":"none" 
+    }
 }
