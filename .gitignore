@@ -135,3 +135,5 @@ artifacts
 
 models/checkpoints/*
 models/trained/*
+notebooks/mlruns
+notebooks/checkpoints

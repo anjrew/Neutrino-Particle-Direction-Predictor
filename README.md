@@ -42,8 +42,17 @@ It should be placed in the 'data/' directory directly so the file structure look
 
 ## Tests
 
-Run the following command in the root directory
+Run the following command in the root directory for testing python files
 
 ```bash
 pytest .
+```
+
+## Viewing Model stats
+
+This project uses ML flow to monitor model performance.
+
+Use the following command in the root of the folder where the 'mlruns' directory is:
+```bash
+mlflow ui
 ```

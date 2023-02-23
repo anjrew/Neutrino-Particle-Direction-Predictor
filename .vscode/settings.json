@@ -17,6 +17,7 @@
         "hovertemplate",
         "icecube",
         "kaggle",
+        "lstm",
         "pytest",
         "showarrow",
         "showlegend",
