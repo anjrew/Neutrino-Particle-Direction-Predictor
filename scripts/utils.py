@@ -2,7 +2,9 @@ import os
 import random
 from typing import Tuple
 import numpy as np
+import pandas as pd
 import math
+import logging
 
 def seed_it_all(seed=7):
     """ Attempt to be Reproducible """
@@ -124,4 +126,82 @@ def adjust_sphere(azimuth:float, zenith:float) -> Tuple[float, float]:
     azimuth = azimuth % (2 * math.pi)
     return azimuth, zenith
 
+
+
+def compose_event_df(
+    batch_df: pd.DataFrame,
+    event_id: str,
+    sensor_geometry: pd.DataFrame,
+) -> pd.DataFrame:
+    """Composes the event dataframe from the batch dataframe and the sensor geometry dataframe.
+
+    Args:
+        batch_df (pd.DataFrame): _description_
+        event_id (str): The event id to extract from the data frame
+        sensor_geometry (pd.DataFrame): The dataframe containing the sensor geometry.
+
+    Returns:
+        pd.DataFrame: a dataframe containing the data for one event.
+    """
+    
+    # filter the batch dataframe for the event_id
+    event_df = batch_df[batch_df['event_id'] == event_id]
+    # merge the event dataframe with the sensor geometry dataframe
+    event_df = pd.merge(
+        left = event_df,
+        right = sensor_geometry,
+        how='inner',
+        on='sensor_id'
+    )
+    # sort the dataframe by sensor_id
+    event_df.sort_values(by=['time'], inplace=True)
+    return event_df
+
+
+def reduce_mem_usage(df, verbose=True):
+    numerics = ['int16', 'int32', 'int64', 'float16', 'float32', 'float64']
+    start_mem = df.memory_usage().sum() / 1024**2
+    for col in df.columns:
+        logging.info(f'Optimizing col {col}')
+        col_type = df[col].dtypes
+        if col_type in numerics:
+            c_min = df[col].min()
+            c_max = df[col].max()
+            if str(col_type)[:3] == 'int':
+                if c_min > np.iinfo(np.int8).min and c_max < np.iinfo(np.int8).max:
+                    df[col] = df[col].astype(np.int8)
+                elif c_min > np.iinfo(np.int16).min and c_max < np.iinfo(np.int16).max:
+                    df[col] = df[col].astype(np.int16)
+                elif c_min > np.iinfo(np.int32).min and c_max < np.iinfo(np.int32).max:
+                    df[col] = df[col].astype(np.int32)
+                elif c_min > np.iinfo(np.int64).min and c_max < np.iinfo(np.int64).max:
+                    df[col] = df[col].astype(np.int64)
+            else:
+                if c_min > np.finfo(np.float16).min and c_max < np.finfo(np.float16).max:
+                    df[col] = df[col].astype(np.float16)
+                elif c_min > np.finfo(np.float32).min and c_max < np.finfo(np.float32).max:
+                    df[col] = df[col].astype(np.float32)
+                else:
+                    df[col] = df[col].astype(np.float64)
+
+    end_mem = df.memory_usage().sum() / 1024**2
+    logging.info('Memory usage after optimization is: {:.2f} MB'.format(end_mem))
+    logging.info('Decreased by {:.1f}%'.format(100 * (start_mem - end_mem) / start_mem))
+    return df
+
+
+
+
+def convert_bytes_to_gmbkb(bytes) -> str:
+    """Converts bytes to a human readable format."""
+    if bytes >= 1099511627776:  # 1 TB = 1024 GB * 1024 MB * 1024 KB bytes
+        return f"{bytes / 1099511627776:.2f} TB"
+    elif bytes >= 1073741824:  # 1 GB = 1024 MB * 1024 KB bytes
+        return f"{bytes / 1073741824:.2f} GB"
+    elif bytes >= 1048576:  # 1 MB = 1024 KB bytes
+        return f"{bytes / 1048576:.2f} MB"
+    elif bytes >= 1024:  # 1 KB = 1024 bytes
+        return f"{bytes / 1024:.2f} KB"
+    else:
+        return f"{bytes} bytes"
 

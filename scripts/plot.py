@@ -50,35 +50,6 @@ def get_event_true_values(meta_df: pd.DataFrame, event_id:int) -> dict:
     return meta_df[meta_df['event_id']== event_id][['azimuth','zenith']].iloc[0].to_dict()
 
 
-def compose_event_df(
-    batch_df: pd.DataFrame,
-    event_id: str,
-    sensor_geometry: pd.DataFrame,
-) -> pd.DataFrame:
-    """Composes the event dataframe from the batch dataframe and the sensor geometry dataframe.
-
-    Args:
-        batch_df (pd.DataFrame): _description_
-        event_id (str): The event id to extract from the data frame
-        sensor_geometry (pd.DataFrame): The dataframe containing the sensor geometry.
-
-    Returns:
-        pd.DataFrame: a dataframe containing the data for one event.
-    """
-    
-    # filter the batch dataframe for the event_id
-    event_df = batch_df[batch_df['event_id'] == event_id]
-    # merge the event dataframe with the sensor geometry dataframe
-    event_df = pd.merge(
-        left = event_df,
-        right = sensor_geometry,
-        how='inner',
-        on='sensor_id'
-    )
-    # sort the dataframe by sensor_id
-    event_df.sort_values(by=['time'], inplace=True)
-    return event_df
-
 
 def plot_pca(
     df:pd.DataFrame, 
