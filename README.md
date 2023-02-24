@@ -56,3 +56,7 @@ Use the following command in the root of the folder where the 'mlruns' directory
 ```bash
 mlflow ui
 ```
+
+## Trouble shooting 
+
+- Error when using Tensorflow when using Nvidia. [More Info](https://github.com/tensorflow/tensorflow/issues/57679)
